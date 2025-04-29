@@ -1,5 +1,3 @@
-# scripts/train.py
-
 import numpy as np
 import pathlib as p
 import tensorflow as tf
