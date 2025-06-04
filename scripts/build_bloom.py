@@ -26,15 +26,23 @@ def main() -> None:
     }
     bad -= GOOD                                       # ← NEW
 
+    # --------- write out plain-text list for Android --------------------- #
+    txt_path = DATA / "bad_domains.txt"
+    with open(txt_path, "w") as f:
+        for domain in sorted(bad):
+            f.write(domain + "\n")
+    print(f"bad_domains.txt saved ({len(bad):,} domains)")
+
     # --------- build & save Bloom filter ------------------------------- #
     bf = BloomFilter(max_elements=len(bad), error_rate=0.01)
     for d in bad:
         bf.add(d)
 
-    with open(DATA / "bad_domains.bloom", "wb") as f:
+    bloom_path = DATA / "bad_domains.bloom"
+    with open(bloom_path, "wb") as f:
         pickle.dump(bf, f)
 
-    print(f"bad_domains.bloom saved  ({len(bad):,} domains)")
+    print(f"bad_domains.bloom saved ({len(bad):,} domains)")
 
 if __name__ == "__main__":
     main()
