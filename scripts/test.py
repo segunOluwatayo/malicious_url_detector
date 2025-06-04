@@ -59,7 +59,62 @@ tests = [
     "https://www.scamwatch.gov.au",
     "https://www.scamwatch.gov.au/report-a-scam",
     "https://anix.com.pl/",
+    "https://tiffanycoshop.com",
+    "https://willow.ie",
+    "Luvasti.com"
 ]
 
 for u in tests:
     print(f"{u:<45} -> {verdict(u)}")
+
+f = feats("https://fantasticfilms.ru")
+import json
+sc = json.load(open("scripts/data/scaler.json"))
+mean, scale = np.array(sc["mean"]), np.array(sc["scale"])
+print("raw-feats:", f)
+print("scaled:", (f - mean)/scale)
+print("char-ids:", encode("https://fantasticfilms.ru")[:10])
+url = "https://fantasticfilms.ru"
+proba = predict(url)
+print(f"{url} -> p={proba:.3f}")
+from pybloom_live import BloomFilter
+import pickle
+
+# (Re)load your source list of malicious domains…
+with open('source_bad_domains.txt') as f:
+    domains = [d.strip() for d in f if d.strip()]
+
+# Build the Bloom filter
+bf = BloomFilter(capacity=len(domains), error_rate=0.001)
+for d in domains:
+    bf.add(d)
+
+# Persist the bloom (for Python use, if you like)
+with open('bad_domains.bloom', 'wb') as f:
+    pickle.dump(bf, f)
+
+# **Also** write out the text list you’ll ship to Android
+with open('bad_domains.txt', 'w') as f:
+    for d in domains:
+        f.write(d + '\n')
+import numpy as np
+
+url = "https://fantasticfilms.ru"
+
+# compute raw features once
+raw_feats = feats(url)
+
+# OPTION A: manual scaling
+mean_  = np.array(sc["mean"])
+scale_ = np.array(sc["scale"])
+scaled_feats = (np.array(raw_feats) - mean_) / scale_
+
+# OPTION B: using the scaler
+# X = np.array(raw_feats).reshape(1, -1)
+# scaled_feats = sc.transform(X).flatten()
+
+print("── PYTHON DEBUG ──")
+print("features :", raw_feats)
+print("scaled   :", scaled_feats)
+print("char ids :", encode(url)[:50])
+print("model p  :", predict(url))
